@@ -58,10 +58,25 @@
         <discardingThreshold>0</discardingThreshold>
         <appender-ref ref="FILE" />
       </appender>
+      
+      
+      <appender name="LOGSTASH" class="ch.qos.logback.core.rolling.RollingFileAppender">
+       <file>test.log</file>
+       <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+          <fileNamePattern>test-%d{yyyy-MM-dd}.log</fileNamePattern>
+       </rollingPolicy>
+      <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+     </appender> 
+      
   
 	<logger name="pl.java.scalatech" level="info" />
 	<logger name="org.springframework" level="info" />
 	<logger name="org.springframework.data" level="warn" />
+	
+	 <logger name="logstashLogger" level="INFO">
+       <appender-ref ref="LOGSTASH" />
+     </logger>
+	
 	
     <root>
      <level value="OFF" />
