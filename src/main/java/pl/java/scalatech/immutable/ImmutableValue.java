@@ -1,9 +1,9 @@
 package pl.java.scalatech.immutable;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.Builder;
 import lombok.experimental.Wither;
 import lombok.extern.slf4j.Slf4j;
 
