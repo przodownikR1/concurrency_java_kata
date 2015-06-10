@@ -1,32 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
- 
-  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
-    <resetJUL>true</resetJUL>
-  </contextListener>
-  
- 
-  <jmxConfigurator/>
-  <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%.-1level|%-40.40logger{0}|%msg%n</pattern>
-    </encoder>
-  </appender>
-  
-   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>concurrent.log</file>
-        <append>true</append>
-        <encoder>
-            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
+	<property scope="context" name="pattern_stdout"
+		value="%highlight(%.-5level)|%green(%date{yyyy-MM-dd HH:mm:ss.SSS})|%boldMagenta([%thread])|%yellow(%logger{70}:%boldYellow(%line))  %X{first} %X{last}  - %msg%n%red(%rEx)" />
+	<property scope="context" name="pattern_log" value="%-4relative [%thread] %-5level %logger{35} - %msg %n"/>
+	<property scope="context" name="pattern_log2" value="%d{yyyy/MM/dd HH:mm:ss,SSS} [%thread] %-5level %logger{36} - %m %throwable{0}%n" />
+	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+		<resetJUL>true</resetJUL>
+	</contextListener>
+	
+	<consolePlugin />
+	<jmxConfigurator />
+	<withJansi>false</withJansi>
+	
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<charset>utf-8</charset>
+			<pattern>${pattern_stdout}</pattern>
+			<pattern></pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>concurrentKata.log</file>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>concurrentKata.%d{yyyyMMdd}.log
+            </fileNamePattern>
+        </rollingPolicy>
+		<append>false</append>
+		<encoder>
+            <pattern>${pattern_log}</pattern>
         </encoder>
-    </appender>
- 
-  <logger name="pl.java.scalatech" level="info" />
-   <logger name="org.springframework" level="info" />
+	</appender>
 
- 
-  <root level="info">
-    <appender-ref ref="console" />
-     <appender-ref ref="FILE" />
-  </root>
+
+	<appender name="PROBLEM_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>troubleshooting.log</file>
+		<append>false</append>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<fileNamePattern>concurrentKataTroubleshooting.%i.log</fileNamePattern>
+			<maxIndex>10</maxIndex>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<maxFileSize>2MB</maxFileSize>
+		</triggeringPolicy>
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>${pattern_log2}</pattern>
+			<outputPatternAsHeader>false</outputPatternAsHeader>
+		</encoder>
+	</appender>
+	
+     <appender name="ASYNC_500_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>500</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="FILE" />
+      </appender>
+  
+	<logger name="pl.java.scalatech" level="info" />
+	<logger name="org.springframework" level="info" />
+	<logger name="org.springframework.data" level="warn" />
+	
+    <root>
+     <level value="OFF" />
+     <appender-ref ref="console" />
+     <appender-ref ref="ASYNC_500_FILE"/>
+   </root>
+   
+   <logger name="problem" additivity="false">
+      <level value="INFO" />
+      <appender-ref ref="PROBLEM_FILE" />
+   </logger>
+   
+   
 </configuration>
