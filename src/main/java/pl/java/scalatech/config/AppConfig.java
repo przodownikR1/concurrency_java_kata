@@ -7,6 +7,7 @@ import java.util.concurrent.ThreadFactory;
 
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
@@ -24,6 +25,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 @Configuration
 @EnableAsync
 @EnableScheduling
+@ComponentScan(basePackages = "pl.java.scalatech.service")
 public class AppConfig implements SchedulingConfigurer, AsyncConfigurer {
     @Bean
     public ReadWriteResource readWriteResource() {
@@ -45,6 +47,7 @@ public class AppConfig implements SchedulingConfigurer, AsyncConfigurer {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setMaxPoolSize(2);
         threadPoolTaskExecutor.setCorePoolSize(2);
+        threadPoolTaskExecutor.setThreadNamePrefix("TH:");
         threadPoolTaskExecutor.initialize();
         return threadPoolTaskExecutor;
     }
