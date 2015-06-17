@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.google.common.base.Stopwatch;
 
@@ -23,5 +24,22 @@ public class SampleService {
         stopwatch.elapsed(TimeUnit.MILLISECONDS);
         log.info("task " + taskCall + " completed in " + stopwatch);
         return new AsyncResult<>(stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    }
+
+    @Async
+    public String asyncGetSimpleVAlue() throws InterruptedException {
+        log.info("+++ start task");
+        Thread.sleep(500);
+        log.info("+++ finish task");
+
+        return "przodownik";
+    }
+
+    @Async
+    public ListenableFuture<String> asyncGetSimpleValueUseListenable() throws InterruptedException {
+        log.info("+++ start task");
+        Thread.sleep(500);
+        log.info("+++ finish task");
+        return new AsyncResult<>("przodownik");
     }
 }
