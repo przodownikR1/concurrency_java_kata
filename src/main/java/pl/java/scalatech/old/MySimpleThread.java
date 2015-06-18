@@ -7,14 +7,14 @@ public class MySimpleThread implements Runnable {
 
     @Override
     public void run() {
-        log.info("+++ start ");
+        log.info("+++ start {}", Thread.currentThread().getName());
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             log.error("{}", e);
         }
-        log.info("+++ end");
-        log.info("+++ run my simple thread action ");
+        log.info("+++ end  {} ", Thread.currentThread().getName());
+        log.info("+++ run my simple thread action  {}", Thread.currentThread().getName());
 
     }
 
