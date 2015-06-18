@@ -1,6 +1,7 @@
 package pl.java.scalatech.old_new;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static java.lang.Thread.getAllStackTraces;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -15,12 +16,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import pl.java.scalatech.old.MySimpleThread;
+import pl.java.scalatech.old_now.CounterCallable;
 import pl.java.scalatech.old_now.MyNewSimpleThread;
 import pl.java.scalatech.old_now.MySimpleCallable;
 
@@ -35,12 +39,37 @@ public class NewThreadApproadTest {
     DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(Locale.getDefault());
     DateTimeFormatter formatter2 = new DateTimeFormatterBuilder().appendPattern("HHmmss.SSSZ").parseCaseInsensitive().toFormatter();
     private static DateTimeFormatter formatter3 = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+    private AtomicInteger ai = new AtomicInteger();
 
     @Test
     public void shouldNewThreadApproachWork() throws Exception {
         MyNewSimpleThread nmst = new MyNewSimpleThread();
 
         log.info("+++  {}", nmst.call());
+    }
+
+    @Test
+    public void shouldAwaitFutureWork() throws InterruptedException, ExecutionException {
+        ExecutorService es = Executors.newFixedThreadPool(7);
+        List<Future<String>> futures = Lists.newArrayList();
+        for (int i : ContiguousSet.create(Range.open(1, 40), DiscreteDomain.integers())) {
+            futures.add(es.submit(new CounterCallable(ai.getAndIncrement())));
+        }
+        new Thread(() -> {
+            for (Future<String> f : futures) {
+                try {
+                    log.info("+++  f = {}", f.get());
+                } catch (InterruptedException | ExecutionException e) {
+                    log.error("{}", e);
+                }
+            }
+        }).start();
+
+        log.info("non-blocking flow .......");
+        getAllStackTraces().keySet().stream().forEach(t -> log.info("thread name = {}", t.getName()));
+        Callable<Boolean> threadWithNameExists = () -> getAllStackTraces().keySet().stream().anyMatch(t -> t.getName().equals("p:37"));
+        await().until(threadWithNameExists, Matchers.is(true));
+
     }
 
     @Test
@@ -109,6 +138,7 @@ public class NewThreadApproadTest {
         for (int i : ContiguousSet.create(Range.open(1, 5), DiscreteDomain.integers())) {
             es.execute(new MySimpleThread());
         }
+        getAllStackTraces().keySet().stream().forEach(t -> log.info(" ~ ->  {}", t));
 
         await().atMost(5, TimeUnit.SECONDS).until((Callable<Boolean>) () -> es.isTerminated());
     }
