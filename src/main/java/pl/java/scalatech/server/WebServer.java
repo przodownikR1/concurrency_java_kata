@@ -8,6 +8,8 @@ import java.io.UncheckedIOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,6 +22,8 @@ public class WebServer {
     public final static int PORT = 9999;
 
     public void run() throws IOException {
+        ExecutorService es = Executors.newFixedThreadPool(1000);
+
         ServerSocket serverSocket = null;
         log.info("+++  start...");
         try {
@@ -28,7 +32,9 @@ public class WebServer {
                 log.info("+++  start2...");
                 Socket s = serverSocket.accept();
                 log.info("{}", s);
-                handle(s);
+                //new Thread(() -> handle(s)).start();
+                es.submit(() -> handle(s));
+
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());
